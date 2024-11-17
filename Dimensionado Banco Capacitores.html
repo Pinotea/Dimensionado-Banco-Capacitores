@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dimensionado banco de capacitores</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .bg-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card {
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .button {
+            transition: all 0.3s ease;
+        }
+        
+        .button:hover {
+            background-color: rgba(59, 130, 246, 0.8);
+            transform: scale(1.05);
+        }
+
+        .futuristic-image {
+            width: 120px;
+            height: 80px;
+            background: radial-gradient(ellipse at center, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%);
+            border-radius: 50% / 60%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(59,130,246,0.5);
+        }
+
+        .futuristic-image img {
+            width: 95%;
+            height: 95%;
+            object-fit: contain;
+            filter: brightness(1.2) contrast(1.2);
+        }
+
+        .formula-container {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        .formula {
+            font-size: 1.5rem;
+            text-align: center;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+
+        .fraction {
+            display: inline-block;
+            vertical-align: middle;
+            text-align: center;
+        }
+        .fraction > span {
+            display: block;
+            padding-top: 0.15em;
+        }
+        .fraction span.fdn {border-top: thin solid white;}
+        .fraction span.bar {display: none;}
+
+        @media (max-width: 640px) {
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            .text-xl {
+                font-size: 1.25rem;
+            }
+            .text-2xl {
+                font-size: 1.5rem;
+            }
+            .px-6 {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient text-white py-8">
+    <div class="container mx-auto px-4">
+        <header class="mb-8 text-center">
+            <h1 id="title" class="text-xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
+                Dimensionado banco de capacitores para motor trifásico conectado como monofásico
+            </h1>
+            <h2 class="text-base font-semibold mb-4 text-white">CONSULTORIA EN INGENIERIA Y EFICIENCIA ENERGETICA</h2>
+            <div class="flex justify-center items-center mb-4">
+                <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Fotografia%20Minor-4051DQMxdMZeQa4dPSd6soUkfPNPag.png" alt="Consultor de Ingeniería" class="w-20 h-20 rounded-full object-cover">
+            </div>
+        </header>
+
+        <div id="main" class="w-full max-w-2xl mx-auto bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-6">
+            <div class="flex justify-center mb-6">
+                <div class="futuristic-image">
+                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/LOGO_CAPACITORES_2--JAd5a5bO6Q5qYJaNPx7lmEMXDdDWDN.png" alt="Capacitor y motor eléctrico">
+                </div>
+            </div>
+            <div class="flex justify-center mt-6">
+                <button id="startButton" class="px-6 py-3 text-lg font-semibold rounded-full text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 button">
+                    Comenzar
+                </button>
+            </div>
+        </div>
+
+        <div id="dataInput" class="w-full max-w-2xl mx-auto bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-6 mt-8 hidden">
+            <h2 class="text-2xl font-semibold mb-4 text-center text-white">Datos generales para el cálculo</h2>
+            <form id="motorDataForm" class="space-y-4">
+                <div>
+                    <label for="potenciaHP" class="block text-sm font-medium text-gray-200">Potencia Motor (HP)</label>
+                    <input type="number" id="potenciaHP" name="potenciaHP" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-gray-900" required>
+                </div>
+                <div>
+                    <label for="potenciaKW" class="block text-sm font-medium text-gray-200">Potencia Motor (KW)</label>
+                    <input type="number" id="potenciaKW" name="potenciaKW" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-gray-900" required>
+                </div>
+                <div>
+                    <label for="voltaje" class="block text-sm font-medium text-gray-200">Voltaje (V)</label>
+                    <input type="number" id="voltaje" name="voltaje" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-gray-900" required>
+                </div>
+                <div>
+                    <label for="intensidad" class="block text-sm font-medium text-gray-200">Intensidad (A)</label>
+                    <input type="number" id="intensidad" name="intensidad" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-gray-900" readonly>
+                </div>
+                <div>
+                    <label for="frecuencia" class="block text-sm font-medium text-gray-200">Frecuencia (HZ)</label>
+                    <input type="number" id="frecuencia" name="frecuencia" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-gray-900" required>
+                </div>
+                <div>
+                    <label for="factorPotencia" class="block text-sm font-medium text-gray-200">Factor de Potencia (cos φ)</label>
+                    <input type="number" id="factorPotencia" name="factorPotencia" value="0.83" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-gray-900" required>
+                </div>
+                <div>
+                    <label for="eficiencia" class="block text-sm font-medium text-gray-200">Eficiencia (η)</label>
+                    <input type="number" id="eficiencia" name="eficiencia" value="0.85" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-gray-900" required>
+                </div>
+                <div>
+                    <label for="velocidad" class="block text-sm font-medium text-gray-200">Velocidad (r.p.m.)</label>
+                    <input type="number" id="velocidad" name="velocidad" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-gray-900" required>
+                </div>
+            </form>
+            <div class="flex justify-center space-x-4 mt-6">
+                <button id="backToMain" class="px-6 py-3 text-lg font-semibold rounded-full text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 button">
+                    Volver al Inicio
+                </button>
+                <button id="dimensionarButton" class="px-6 py-3 text-lg font-semibold rounded-full text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 button">
+                    Dimensionar
+                </button>
+            </div>
+        </div>
+
+        <div id="result" class="w-full max-w-2xl mx-auto bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-6 mt-8 hidden">
+            <h2 id="resultTitle" class="text-2xl font-semibold mb-4 text-center text-white">Resultado del Dimensionado</h2>
+            <div class="flex justify-center mb-6">
+                <div class="futuristic-image">
+                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/LOGO_CAPACITORES_2--JAd5a5bO6Q5qYJaNPx7lmEMXDdDWDN.png" alt="Capacitor y motor eléctrico">
+                </div>
+            </div>
+            <div id="resultContent" class="text-left space-y-2">
+                <!-- El resultado se insertará aquí -->
+            </div>
+            <div class="flex justify-center mt-6 space-x-4">
+                <button id="backToDataInput" class="px-6 py-3 text-lg font-semibold rounded-full text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 button">
+                    Volver a Datos Generales
+                </button>
+                <button id="nextToAdditionalCalc" class="px-6 py-3 text-lg font-semibold rounded-full text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 button">
+                    Siguiente
+                </button>
+            </div>
+        </div>
+
+        <div id="additionalCalc" class="w-full max-w-2xl mx-auto bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-6 mt-8 hidden">
+            <h2 class="text-2xl font-semibold mb-4 text-center text-white">Cálculo de Impedancia Inductiva</h2>
+            <div class="formula-container">
+                <div class="formula">
+                    XL = <div class="fraction">
+                        <span class="fup">√3 × V² × cos φ × η</span>
+                        <span class="fdn">P</span>
+                    </div>
+                </div>
+            </div>
+            <div id="impedanceResult" class="text-center mb-4">
+                <!-- El resultado del cálculo de impedancia se insertará aquí -->
+            </div>
+            <div class="flex justify-center mt-6 space-x-4">
+                <button id="backToResult" class="px-6 py-3 text-lg font-semibold rounded-full text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 button">
+                    Volver a Resultados
+                </button>
+                <button id="nextToCapacitorCalc" class="px-6 py-3 text-lg font-semibold rounded-full text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 button">
+                    Siguiente
+                </button>
+            </div>
+        </div>
+
+        <div id="capacitorCalc" class="w-full max-w-2xl mx-auto bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-6 mt-8 hidden">
+            <h2 class="text-2xl font-semibold mb-4 text-center text-white">Cálculo de Capacidad del Condensador en Paralelo</h2>
+            <div class="formula-container">
+                <div class="formula">
+                    C = <div class="fraction">
+                        <span class="fup">1</span>
+                        <span class="fdn">2 × π × F × XL</span>
+                    </div>
+                </div>
+            </div>
+            <div id="capacitorResult" class="text-center mb-4">
+                <!-- El resultado del cálculo de capacidad del condensador se insertará aquí -->
+            </div>
+            <div class="flex justify-center mt-6 space-x-4">
+                <button id="backToImpedanceCalc" class="px-6 py-3 text-lg font-semibold rounded-full text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 button">
+                    Volver a Impedancia
+                </button>
+                <button id="nextToVoltageCalc" class="px-6 py-3 text-lg font-semibold rounded-full text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 button">
+                    Siguiente
+                </button>
+            </div>
+        </div>
+
+        <div id="voltageCalc" class="w-full max-w-2xl mx-auto bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-6 mt-8 hidden">
+            <h2 class="text-2xl font-semibold mb-4 text-center text-white">Cálculo de Voltaje de los Capacitores</h2>
+            <div class="formula-container">
+                <div class="formula">
+                    Vc = V línea × √2
+                </div>
+            </div>
+            <div id="voltageResult" class="text-center mb-4">
+                <!-- El resultado del cálculo de voltaje de los capacitores se insertará aquí -->
+            </div>
+            <div class="flex justify-center mt-6 space-x-4">
+                <button id="backToCapacitorCalc" class="px-6 py-3 text-lg font-semibold rounded-full text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 button">
+                    Volver a Capacidad
+                </button>
+                <button id="nextToParallelCapacitors" class="px-6 py-3 text-lg font-semibold rounded-full text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 button">
+                    Siguiente
+                </button>
+            </div>
+        </div>
+
+        <div id="parallelCapacitors" class="w-full max-w-2xl mx-auto bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-6 mt-8 hidden">
+            <h2 class="text-2xl font-semibold mb-4 text-center text-white">Cálculo de Capacitores de trabajo en Paralelo</h2>
+            <div class="mb-4">
+                <label for="capacitorIndividual" class="block text-sm font-medium text-gray-200 mb-2">Seleccione la capacidad del capacitor:</label>
+                <select id="capacitorIndividual" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm text-gray-900">
+                    <option value="2.5">2.5 μF</option>
+                    <option value="5">5 μF</option>
+                    <option value="10">10 μF</option>
+                    <option value="15">15 μF</option>
+                    <option value="20">20 μF</option>
+                    <option value="25">25 μF</option>
+                    <option value="30">30 μF</option>
+                    <option value="40">40 μF</option>
+                    <option value="50">50 μF</option>
+                    <option value="60">60 μF</option>
+                    <option value="70">70 μF</option>
+                    <option value="80">80 μF</option>
+                    <option value="90">90 μF</option>
+                    <option value="100">100 μF</option>
+                    <option value="110">110 μF</option>
+                    <option value="120">120 μF</option>
+                    <option value="130">130 μF</option>
+                    <option value="140">140 μF</option>
+                    <option value="150">150 μF</option>
+                    <option value="160">160 μF</option>
+                    <option value="170">170 μF</option>
+                    <option value="180">180 μF</option>
+                    <option value="190">190 μF</option>
+                    <option value="200">200 μF</option>
+                </select>
+            </div>
+            <div class="formula-container">
+                <div class="formula text-sm">
+                    Número de capacitores = Capacidad total / Capacidad individual
+                </div>
+            </div>
+            <div id="parallelCapacitorsResult" class="text-center mb-4">
+                <!-- El resultado del cálculo de capacitores en paralelo se insertará aquí -->
+            </div>
+            <div class="flex justify-center mt-6 space-x-4">
+                <button id="backToVoltageCalc" class="px-6 py-3 text-lg font-semibold rounded-full text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 button">
+                    Volver a Voltaje
+                </button>
+                <button id="nextToStartCapacitorCalc" class="px-6 py-3 text-lg font-semibold rounded-full text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 button">
+                    Siguiente
+                </button>
+            </div>
+        </div>
+
+        <div id="startCapacitorCalc" class="w-full max-w-2xl mx-auto bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-6 mt-8 hidden">
+            <h2 class="text-2xl font-semibold mb-4 text-center text-white">Cálculo de Capacidad de Capacitor de Arranque en Paralelo</h2>
+            <div class="formula-container">
+                <div class="formula text-sm">
+                    Capacitor de Arranque = Capacidad total × Factor de arranque
+                </div>
+            </div>
+            <div id="startCapacitorResult" class="text-center mb-4">
+                <!-- El resultado del cálculo del capacitor de arranque se insertará aquí -->
+            </div>
+            <div class="flex justify-center mt-6 space-x-4">
+                <button id="backToParallelCapacitors" class="px-6 py-3 text-lg font-semibold rounded-full text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 button">
+                    Volver a Capacitores en Paralelo
+                </button>
+                <button id="nextToStartCapacitorSelection" class="px-6 py-3 text-lg font-semibold rounded-full text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 button">
+                    Siguiente
+                </button>
+            </div>
+        </div>
+
+        <div id="startCapacitorSelection" class="w-full max-w-2xl mx-auto bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-6 mt-8 hidden">
+            <h2 class="text-2xl font-semibold mb-4 text-center text-white">Selección de Capacitor de Arranque</h2>
+            <div class="mb-4">
+                <label for="startCapacitorIndividual" class="block text-sm font-medium text-gray-200 mb-2">Seleccione la capacidad del capacitor de arranque:</label>
+                <select id="startCapacitorIndividual" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm text-gray-900">
+                    <option value="100">100 μF</option>
+                    <option value="150">150 μF</option>
+                    <option value="200">200 μF</option>
+                    <option value="300">300 μF</option>
+                    <option value="400">400 μF</option>
+                    <option value="500">500 μF</option>
+                    <option value="600">600 μF</option>
+                    <option value="750">750 μF</option>
+                    <option value="800">800 μF</option>
+                    <option value="1000">1000 μF</option>
+                </select>
+            </div>
+            <div class="formula-container">
+                <div class="formula text-sm">
+                    Número de capacitores de arranque = Capacidad total de arranque / Capacidad individual de arranque
+                </div>
+            </div>
+            <div id="startCapacitorSelectionResult" class="text-center mb-4">
+                <!-- El resultado del cálculo de capacitores de arranque en paralelo se insertará aquí -->
+            </div>
+            <div class="flex justify-center mt-6 space-x-4">
+                <button id="backToStartCapacitorCalc" class="px-6 py-3 text-lg font-semibold rounded-full text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 button">
+                    Volver a Cálculo de Capacitor de Arranque
+                </button>
+                <button id="nextToGeneralConsiderations" class="px-6 py-3 text-lg font-semibold rounded-full text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 button">
+                    Siguiente
+                </button>
+            </div>
+        </div>
+
+        <div id="generalConsiderations" class="w-full max-w-2xl mx-auto bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-6 mt-8 hidden">
+            <h2 class="text-2xl font-semibold mb-4 text-center text-white">Consideraciones Generales para la Correcta Instalación</h2>
+            <div class="text-left space-y-2">
+                <p>• Los capacitores de arranque están diseñados para operar brevemente (aproximadamente 2-3 segundos) durante el arranque. Deben desconectarse después del encendido mediante un interruptor centrífugo o un relé de arranque.</p>
+                <p>• Usar un capacitor con una capacidad incorrecta puede dañar el motor o no proporcionar suficiente torque de arranque.</p>
+                <p>• Frecuencia eléctrica: Verifica que el capacitor sea compatible con la frecuencia (50/60 Hz).</p>
+                <p>• Sobrecorriente: Asegúrate de que el capacitor sea capaz de soportar corrientes transitorias en el arranque.</p>
+                <p>• Ubicación: Montar lo más cerca posible del motor para minimizar caídas de tensión y pérdidas en cables.</p>
+                <p>• Fusibles o interruptores térmicos: Instalar dispositivos de protección en el circuito del capacitor para evitar sobrecalentamientos y fallas.</p>
+                <p>• Control automático: En sistemas con múltiples motores, considera usar un controlador automático para conectar/desconectar los capacitores según la carga.</p>
+                <p>• Problema: Si el banco de capacitores inyecta más reactivos de los necesarios, el sistema puede presentar sobrecompensación, lo que puede causar resonancias y sobretensiones.</p>
+                <p>• Solución: Diseñar el banco con niveles ajustables. Usar capacitores con escalones automáticos o temporizadores para desconectarlos en cargas ligeras.</p>
+                <p>• Siempre consulta las normas eléctricas locales y realiza simulaciones del sistema si se trata de una instalación compleja. Esto asegura que el diseño sea seguro y cumpla con las regulaciones.</p>
+            </div>
+            <div class="flex justify-center mt-6 space-x-4">
+                <button id="backToStartCapacitorSelection" class="px-6 py-3 text-lg font-semibold rounded-full text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 button">
+                    Volver a Selección de Capacitor de Arranque
+                </button>
+                <button id="restartCalculation" class="px-6 py-3 text-lg font-semibold rounded-full text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 button">
+                    Reiniciar Cálculo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const pages = ['main', 'dataInput', 'result', 'additionalCalc', 'capacitorCalc', 'voltageCalc', 'parallelCapacitors', 'startCapacitorCalc', 'startCapacitorSelection', 'generalConsiderations'];
+
+            function showPage(pageId) {
+                pages.forEach(page => {
+                    document.getElementById(page).classList.add('hidden');
+                });
+                document.getElementById(pageId).classList.remove('hidden');
+            }
+
+            document.getElementById('startButton').addEventListener('click', function() {
+                showPage('dataInput');
+            });
+
+            document.getElementById('dimensionarButton').addEventListener('click', function() {
+                showPage('result');
+                
+                const formData = new FormData(document.getElementById('motorDataForm'));
+                let resultHTML = '';
+                for (let [key, value] of formData.entries()) {
+                    let label = '';
+                    switch(key) {
+                        case 'potenciaHP':
+                            label = 'Potencia Motor (HP)';
+                            break;
+                        case 'potenciaKW':
+                            label = 'Potencia Motor (KW)';
+                            break;
+                        case 'voltaje':
+                            label = 'Voltaje (V)';
+                            break;
+                        case 'intensidad':
+                            label = 'Intensidad (A)';
+                            break;
+                        case 'frecuencia':
+                            label = 'Frecuencia (HZ)';
+                            break;
+                        case 'factorPotencia':
+                            label = 'Factor de Potencia (cos φ)';
+                            break;
+                        case 'eficiencia':
+                            label = 'Eficiencia (η)';
+                            break;
+                        case 'velocidad':
+                            label = 'Velocidad (r.p.m.)';
+                            break;
+                        default:
+                            label = key;
+                    }
+                    resultHTML += `<p><strong>${label}:</strong> ${value}</p>`;
+                }
+                document.getElementById('resultContent').innerHTML = resultHTML;
+            });
+
+            document.getElementById('backToDataInput').addEventListener('click', function() {
+                showPage('dataInput');
+            });
+
+            document.getElementById('backToMain').addEventListener('click', function() {
+                showPage('main');
+            });
+
+            document.getElementById('nextToAdditionalCalc').addEventListener('click', function() {
+                showPage('additionalCalc');
+                calculateImpedance();
+            });
+
+            document.getElementById('backToResult').addEventListener('click', function() {
+                showPage('result');
+            });
+
+            document.getElementById('nextToCapacitorCalc').addEventListener('click', function() {
+                showPage('capacitorCalc');
+                calculateCapacitor();
+            });
+
+            document.getElementById('backToImpedanceCalc').addEventListener('click', function() {
+                showPage('additionalCalc');
+            });
+
+            document.getElementById('nextToVoltageCalc').addEventListener('click', function() {
+                showPage('voltageCalc');
+                calculateVoltage();
+            });
+
+            document.getElementById('backToCapacitorCalc').addEventListener('click', function() {
+                showPage('capacitorCalc');
+            });
+
+            document.getElementById('nextToParallelCapacitors').addEventListener('click', function() {
+                showPage('parallelCapacitors');
+                calculateParallelCapacitors();
+            });
+
+            document.getElementById('backToVoltageCalc').addEventListener('click', function() {
+                showPage('voltageCalc');
+            });
+
+            document.getElementById('nextToStartCapacitorCalc').addEventListener('click', function() {
+                showPage('startCapacitorCalc');
+                calculateStartCapacitor();
+            });
+
+            document.getElementById('backToParallelCapacitors').addEventListener('click', function() {
+                showPage('parallelCapacitors');
+            });
+
+            document.getElementById('nextToStartCapacitorSelection').addEventListener('click', function() {
+                showPage('startCapacitorSelection');
+                calculateStartCapacitorSelection();
+            });
+
+            document.getElementById('backToStartCapacitorCalc').addEventListener('click', function() {
+                showPage('startCapacitorCalc');
+            });
+
+            document.getElementById('nextToGeneralConsiderations').addEventListener('click', function() {
+                showPage('generalConsiderations');
+            });
+
+            document.getElementById('backToStartCapacitorSelection').addEventListener('click', function() {
+                showPage('startCapacitorSelection');
+            });
+
+            document.getElementById('restartCalculation').addEventListener('click', function() {
+                document.getElementById('motorDataForm').reset();
+                document.querySelectorAll('div[id$="Result"]').forEach(el => el.innerHTML = '');
+                showPage('main');
+            });
+
+            function hpToKw(hp) {
+                return hp * 0.746;
+            }
+
+            function kwToHp(kw) {
+                return kw / 0.746;
+            }
+
+            function calculateIntensidad() {
+                const potenciaKW = parseFloat(document.getElementById('potenciaKW').value);
+                const voltaje = parseFloat(document.getElementById('voltaje').value);
+                if (!isNaN(potenciaKW) && !isNaN(voltaje) && voltaje !== 0) {
+                    const intensidad = (potenciaKW * 1000) / voltaje;
+                    document.getElementById('intensidad').value = intensidad.toFixed(2);
+                } else {
+                    document.getElementById('intensidad').value = '';
+                }
+            }
+
+            function calculateImpedance() {
+                const voltaje = parseFloat(document.getElementById('voltaje').value);
+                const potenciaKW = parseFloat(document.getElementById('potenciaKW').value);
+                const factorPotencia = parseFloat(document.getElementById('factorPotencia').value);
+                const eficiencia = parseFloat(document.getElementById('eficiencia').value);
+
+                if (!isNaN(voltaje) && !isNaN(potenciaKW) && !isNaN(factorPotencia) && !isNaN(eficiencia)) {
+                    const impedancia = (Math.sqrt(3) * Math.pow(voltaje, 2) * factorPotencia * eficiencia) / (potenciaKW * 1000);
+                    document.getElementById('impedanceResult').innerHTML = `
+                        <p class="text-xl font-bold">Impedancia Inductiva (XL):</p>
+                        <p class="text-2xl">${impedancia.toFixed(2)} Ω</p>
+                        <p class="mt-4">Valores utilizados:</p>
+                        <p>V = ${voltaje} V</p>
+                        <p>P = ${potenciaKW} kW</p>
+                        <p>cos φ = ${factorPotencia}</p>
+                        <p>η = ${eficiencia}</p>
+                    `;
+                } else {
+                    document.getElementById('impedanceResult').innerHTML = '<p class="text-red-500">Error: Faltan datos para el cálculo.</p>';
+                }
+            }
+
+            function calculateCapacitor() {
+                const frecuencia = parseFloat(document.getElementById('frecuencia').value);
+                const impedancia = parseFloat(document.getElementById('impedanceResult').querySelector('.text-2xl').textContent);
+
+                if (!isNaN(frecuencia) && !isNaN(impedancia)) {
+                    const capacidad = 1 / (2 * Math.PI * frecuencia * impedancia);
+                    const capacidadMicroF = capacidad * 1000000;
+                    document.getElementById('capacitorResult').innerHTML = `
+                        <p class="text-xl font-bold">Capacidad del Condensador (C):</p>
+                        <p class="text-2xl">${capacidadMicroF.toFixed(2)} μF</p>
+                        <p class="mt-4">Valores utilizados:</p>
+                        <p>F = ${frecuencia} Hz</p>
+                        <p>XL = ${impedancia.toFixed(2)} Ω</p>
+                    `;
+                } else {
+                    document.getElementById('capacitorResult').innerHTML = '<p class="text-red-500">Error: Faltan datos para el cálculo.</p>';
+                }
+            }
+
+            function calculateVoltage() {
+                const voltaje = parseFloat(document.getElementById('voltaje').value);
+
+                if (!isNaN(voltaje)) {
+                    const voltajeCapacitores = voltaje * Math.sqrt(2);
+                    const voltajeAproximado = aproximarVoltaje(voltajeCapacitores);
+                    document.getElementById('voltageResult').innerHTML = `
+                        <p class="text-xl font-bold">Voltaje de los Capacitores (Vc):</p>
+                        <p class="text-2xl">${voltajeCapacitores.toFixed(2)} V ≈ ${voltajeAproximado} V</p>
+                        <p class="mt-4">Valores utilizados:</p>
+                        <p>V línea = ${voltaje} V</p>
+                    `;
+                } else {
+                    document.getElementById('voltageResult').innerHTML = '<p class="text-red-500">Error: Faltan datos para el cálculo.</p>';
+                }
+            }
+
+            function aproximarVoltaje(voltaje) {
+                if (voltaje <= 50) {
+                    return 50;
+                } else {
+                    return Math.ceil(voltaje / 50) * 50;
+                }
+            }
+
+            function calculateParallelCapacitors() {
+                const capacidadTotal = parseFloat(document.getElementById('capacitorResult').querySelector('.text-2xl').textContent);
+                const capacidadIndividual = parseFloat(document.getElementById('capacitorIndividual').value);
+
+                if (!isNaN(capacidadTotal) && !isNaN(capacidadIndividual)) {
+                    const numeroCapacitores = Math.ceil(capacidadTotal / capacidadIndividual);
+                    document.getElementById('parallelCapacitorsResult').innerHTML = `
+                        <p class="text-xl font-bold">Número de Capacitores en Paralelo:</p>
+                        <p class="text-2xl">${numeroCapacitores}</p>
+                        <p class="mt-4">Valores utilizados:</p>
+                        <p>Capacidad Total = ${capacidadTotal.toFixed(2)} μF</p>
+                        <p>Capacidad Individual = ${capacidadIndividual} μF</p>
+                    `;
+                } else {
+                    document.getElementById('parallelCapacitorsResult').innerHTML = '<p class="text-red-500">Error: Faltan datos para el cálculo.</p>';
+                }
+            }
+
+            function calculateStartCapacitor() {
+                const capacidadTotal = parseFloat(document.getElementById('capacitorResult').querySelector('.text-2xl').textContent);
+                const factorArranque = 3; // Este valor puede ser ajustado según las necesidades
+
+                if (!isNaN(capacidadTotal)) {
+                    const capacidadArranque = capacidadTotal * factorArranque;
+                    document.getElementById('startCapacitorResult').innerHTML = `
+                        <p class="text-xl font-bold">Capacidad del Capacitor de Arranque:</p>
+                        <p class="text-2xl">${capacidadArranque.toFixed(2)} μF</p>
+                        <p class="mt-4">Valores utilizados:</p>
+                        <p>Capacidad Total = ${capacidadTotal.toFixed(2)} μF</p>
+                        <p>Factor de Arranque = ${factorArranque}</p>
+                    `;
+                } else {
+                    document.getElementById('startCapacitorResult').innerHTML = '<p class="text-red-500">Error: Faltan datos para el cálculo.</p>';
+                }
+            }
+
+            function calculateStartCapacitorSelection() {
+                const capacidadArranque = parseFloat(document.getElementById('startCapacitorResult').querySelector('.text-2xl').textContent);
+                const capacidadIndividualArranque = parseFloat(document.getElementById('startCapacitorIndividual').value);
+
+                if (!isNaN(capacidadArranque) && !isNaN(capacidadIndividualArranque)) {
+                    const numeroCapacitoresArranque = Math.ceil(capacidadArranque / capacidadIndividualArranque);
+                    document.getElementById('startCapacitorSelectionResult').innerHTML = `
+                        <p class="text-xl font-bold">Número de Capacitores de Arranque en Paralelo:</p>
+                        <p class="text-2xl">${numeroCapacitoresArranque}</p>
+                        <p class="mt-4">Valores utilizados:</p>
+                        <p>Capacidad Total de Arranque = ${capacidadArranque.toFixed(2)} μF</p>
+                        <p>Capacidad Individual de Arranque = ${capacidadIndividualArranque} μF</p>
+                    `;
+                } else {
+                    document.getElementById('startCapacitorSelectionResult').innerHTML = '<p class="text-red-500">Error: Faltan datos para el cálculo.</p>';
+                }
+            }
+
+            document.getElementById('potenciaHP').addEventListener('input', function() {
+                const hp = parseFloat(this.value);
+                if (!isNaN(hp)) {
+                    document.getElementById('potenciaKW').value = hpToKw(hp).toFixed(2);
+                    calculateIntensidad();
+                }
+            });
+
+            document.getElementById('potenciaKW').addEventListener('input', function() {
+                const kw = parseFloat(this.value);
+                if (!isNaN(kw)) {
+                    document.getElementById('potenciaHP').value = kwToHp(kw).toFixed(2);
+                    calculateIntensidad();
+                }
+            });
+
+            document.getElementById('voltaje').addEventListener('input', calculateIntensidad);
+
+            document.getElementById('capacitorIndividual').addEventListener('change', calculateParallelCapacitors);
+
+            document.getElementById('startCapacitorIndividual').addEventListener('change', calculateStartCapacitorSelection);
+
+            // Calcular intensidad inicial si los valores ya están presentes
+            calculateIntensidad();
+        });
+    </script>
+</body>
+</html>
